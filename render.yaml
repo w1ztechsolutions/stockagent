@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: phungu-agent
+    runtime: python
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: cd agent-render && .venv/bin/uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PROVIDER_ORDER
+        value: ollama,openrouter,gemini,groq
+      - key: OLLAMA_BASE_URL
+        sync: false
+      - key: OLLAMA_MODEL
+        value: llama3.1:8b
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: CLOUDFLARE_API_TOKEN
+        sync: false
+      - key: CLOUDFLARE_ACCOUNT_ID
+        sync: false
+      - key: ADMIN_TOKEN
+        sync: false
+      - key: MAX_AGENT_STEPS
+        value: "6"
+      - key: MAX_HISTORY
+        value: "8"
+    healthCheckPath: /health
+    autoDeploy: true

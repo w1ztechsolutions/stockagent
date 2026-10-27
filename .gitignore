@@ -1,0 +1,16 @@
+.env
+.venv
+.env.*
+venv
+.env.example!
+.env.local.*
+.env.*.local
+__pypackages__/
+__pycache__/
+models.txt
+*.py[cod]
+.vscode/
+
+.idea/
+
+*.swp
