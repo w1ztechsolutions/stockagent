@@ -32,9 +32,9 @@ The Phungu Agent follows a simple, modular architecture:
     └───┬────┘                        └─────────┘
         │
         ▼
-    ┌─────────────────────────────────────┐
+┌─────────────────────────────────────┐
     │         Providers (OpenAI Compat)    │
-    │  Ollama → OpenRouter → Gemini → Groq│
+    │  OpenRouter → Gemini → Groq        │
     └─────────────────────────────────────┘
               │
               ▼

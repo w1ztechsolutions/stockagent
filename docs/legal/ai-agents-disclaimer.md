@@ -31,7 +31,7 @@ The local Agent application uses large language models (LLMs) for:
 - Document parsing and structured data extraction
 - Technical assistance with deployments and troubleshooting
 
-The Agent supports multiple providers: Ollama (local), OpenRouter, Google Gemini, and Groq.
+The Agent supports multiple providers: OpenRouter, Google Gemini, and Groq.
 
 ## 3. AI Model Limitations
 
@@ -159,12 +159,11 @@ Where possible, the service identifies which provider generated the response:
 - "Provider: gemini" — Google Gemini model was used
 - "Provider: groq" — Groq-hosted model was used
 - "Provider: openrouter" — OpenRouter model was used
-- "Provider: ollama" — Local Ollama model was used
 - "Provider: none" — No provider was available
 
 ### 9.2 Open Source Models
 
-When using Ollama for local inference, models are run on the user's machine. No data is transmitted to third parties during local inference.
+This service does not run open source models locally; all inference is performed through third-party API providers (OpenRouter, Google Gemini, Groq). Data transmitted to these providers is subject to their respective terms of service and privacy policies.
 
 ## 10. Commercial AI Offerings
 

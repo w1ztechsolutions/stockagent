@@ -14,7 +14,7 @@ The Phungu Agent is a FastAPI-based service that provides an AI-powered assistan
 ### Core Capabilities
 
 - **Conversational AI Interface** - Accepts natural language queries via `/chat` endpoint with session-based conversation history
-- **Multi-Provider LLM Routing** - Automatically tries providers in order (Ollama, OpenRouter, Gemini, Groq) with automatic fallback on failure
+- **Multi-Provider LLM Routing** - Automatically tries providers in order (OpenRouter, Gemini, Groq) with automatic fallback on failure
 - **Market Data Tools** (Read-Only)
   - `get_quote(symbol)` - Get latest quote for an MSE symbol from local database
   - `get_history(symbol, days)` - Get historical price data (5-730 days range, returns up to 60 points)

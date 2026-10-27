@@ -73,7 +73,6 @@ The Local Agent uses third-party language model providers:
 
 | Provider | Purpose | Terms |
 |----------|---------|-------|
-| Ollama | Local model inference | https://ollama.com/terms |
 | OpenRouter | API-based LLM access | https://openrouter.ai/terms |
 | Google Gemini | API-based LLM access | https://ai.google.dev/terms |
 | Groq | API-based LLM access | https://groq.com/terms |

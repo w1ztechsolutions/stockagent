@@ -1,18 +1,15 @@
-"""OpenAI-compatible chat client used by Gemini, Groq, OpenRouter and Ollama."""
+"""OpenAI-compatible chat client used by Gemini, Groq and OpenRouter."""
 
 from __future__ import annotations
 
 import json
 import re
-import time
 from typing import Any
 
 import httpx
 
 from app.providers.base import AssistantTurn, ChatMessage, ProviderError, ToolCall
 
-OLLAMA_PROBE_TTL = 15.0
-OLLAMA_CONNECT_TIMEOUT = 0.4
 ERROR_TEXT_LIMIT = 300
 
 ZERO_WIDTH_CHARS = (0x200B, 0x200C, 0x200D, 0xFEFF)
@@ -66,8 +63,7 @@ class OpenAICompatProvider:
         self._endpoint = base_url + "/chat/completions"
         timeout = httpx.Timeout(getattr(settings, "timeout", 60.0), connect=10.0)
         self._client = httpx.Client(timeout=timeout)
-        self._probe: tuple[float, bool] | None = None
-    
+
     @property
     def _headers(self) -> dict[str, str]:
         headers = {"Content-Type": "application/json"}
@@ -82,27 +78,7 @@ class OpenAICompatProvider:
     def available(self) -> bool:
         if not getattr(self.settings, "enabled", True):
             return False
-        if self.name == "ollama":
-            return self._probe_ollama()
         return bool(getattr(self.settings, "api_key", None))
-
-    def _probe_ollama(self) -> bool:
-        now = time.monotonic()
-        if self._probe is not None:
-            checked_at, reachable = self._probe
-            if now - checked_at < OLLAMA_PROBE_TTL:
-                return reachable
-        try:
-            probe = httpx.Client(timeout=OLLAMA_CONNECT_TIMEOUT)
-            try:
-                resp = probe.get(f"{self.settings.base_url.rstrip('/')}/api/tags")
-                reachable = resp.status_code == 200
-            finally:
-                probe.close()
-        except Exception:
-            reachable = False
-        self._probe = (now, reachable)
-        return reachable
 
     def chat(self, messages: list[ChatMessage], tools: list[dict[str, Any]] | None = None) -> AssistantTurn:
         payload: dict[str, Any] = {

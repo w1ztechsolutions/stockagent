@@ -13,9 +13,9 @@ Health check endpoint.
 ```json
 {
   "status": "healthy",
-  "provider": "ollama",
+  "provider": "openrouter",
   "database": "connected",
-  "model": "llama3.1:8b"
+  "model": "anthropic/claude-3.5-sonnet"
 }
 ```
 
@@ -51,7 +51,7 @@ Chat with the finance agent.
 {
   "response": "TNM (Telekom Networks Malawi) is currently trading at...",
   "session_id": "session_1234567890",
-  "model_used": "ollama",
+  "model_used": "openrouter",
   "steps": 2
 }
 ```
@@ -114,20 +114,46 @@ List configured providers (admin only).
 {
   "providers": [
     {
-      "name": "ollama",
+      "name": "openrouter",
       "enabled": true,
       "available": true,
-      "model": "llama3.1:8b",
-      "base_url": "http://localhost:11434"
-    },
-    {
-      "name": "openrouter",
-      "enabled": false,
-      "available": false,
       "model": "anthropic/claude-3.5-sonnet",
       "base_url": "https://openrouter.ai/api/v1"
+    },
+    {
+      "name": "gemini",
+      "enabled": false,
+      "available": false,
+      "model": "gemini-1.5-flash",
+      "base_url": "https://generativelanguage.googleapis.com/v1beta"
     }
   ]
+}
+```
+
+**Errors:**
+- 503 if ADMIN_TOKEN not configured
+- 401 if invalid token
+
+---
+
+### GET /admin
+Redirects to the admin dashboard web UI (`/static/admin.html`). The dashboard lists providers, active sessions, and service health, and lets you clear sessions — all protected by `ADMIN_TOKEN`.
+
+**Errors:** 401 if invalid token
+
+---
+
+### GET /admin/sessions
+List active session IDs (admin only).
+
+**Headers:**
+- `Authorization` (string, required) - `Bearer {ADMIN_TOKEN}`
+
+**Response:**
+```json
+{
+  "sessions": ["session_1234567890"]
 }
 ```
 

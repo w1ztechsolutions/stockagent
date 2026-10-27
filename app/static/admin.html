@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phungu Agent - Admin Dashboard</title>
+  <link rel="stylesheet" href="/static/css/admin.css" />
+</head>
+<body>
+  <header>
+    <h1>Phungu Agent - Admin Dashboard</h1>
+    <span id="status-badge" class="badge">unknown</span>
+  </header>
+
+  <nav>
+    <button class="nav-btn active" data-tab="providers">Providers</button>
+    <button class="nav-btn" data-tab="sessions">Sessions</button>
+    <button class="nav-btn" data-tab="health">Health</button>
+  </nav>
+
+  <main>
+    <!-- Providers tab -->
+    <section id="tab-providers" class="tab active">
+      <h2>LLM Providers</h2>
+      <div id="providers-list" class="card">
+        <p>Loading providers...</p>
+      </div>
+    </section>
+
+    <!-- Sessions tab -->
+    <section id="tab-sessions" class="tab">
+      <h2>Active Sessions</h2>
+      <div id="sessions-list" class="card">
+        <p>Loading sessions...</p>
+      </div>
+      <div class="actions">
+        <label>Session ID:
+          <input id="session-id-input" type="text" placeholder="session_xxx" />
+        </label>
+        <button id="clear-session-btn" class="btn-danger">Clear Session</button>
+      </div>
+    </section>
+
+    <!-- Health tab -->
+    <section id="tab-health" class="tab">
+      <h2>Service Health</h2>
+      <div id="health-info" class="card">
+        <p>Loading health...</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Phungu Agent v1.0.0</p>
+  </footer>
+
+  <script src="/static/js/admin.js"></script>
+</body>
+</html>

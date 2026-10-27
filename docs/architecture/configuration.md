@@ -8,13 +8,13 @@ All configuration is managed via environment variables in `app/config.py`.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PROVIDER_ORDER` | `ollama,openrouter,gemini,groq` | Comma-separated provider priority order |
-| `OLLAMA_BASE_URL` | `http://localhost:11434` | Ollama API base URL |
-| `OLLAMA_MODEL` | `llama3.1:8b` | Default Ollama model |
+| `PROVIDER_ORDER` | `openrouter,gemini,groq` | Comma-separated provider priority order |
+| `OPENROUTER_API_KEY` | `""` | OpenRouter API key (get one at https://openrouter.ai/keys) |
+| `OPENROUTER_MODELS` | 10 free models (see below) | Comma-separated OpenRouter models, tried in round-robin order within the provider |
 | `GEMINI_API_KEY` | `""` | Google Gemini API key |
+| `GEMINI_MODELS` | `gemini-1.5-flash` | Comma-separated Gemini models, round-robin within the provider |
 | `GROQ_API_KEY` | `""` | Groq API key |
-| `CLOUDFLARE_API_TOKEN` | `""` | Cloudflare API token (used by OpenRouter config in router) |
-| `CLOUDFLARE_ACCOUNT_ID` | `""` | Cloudflare account ID |
+| `GROQ_MODELS` | `mixtral-8x7b-32768` | Comma-separated Groq models, round-robin within the provider |
 
 ### Application Settings
 
@@ -29,43 +29,49 @@ All configuration is managed via environment variables in `app/config.py`.
 
 ```python
 class Settings:
-    PROVIDER_ORDER: list = os.getenv("PROVIDER_ORDER", "ollama,openrouter,gemini,groq").split(",")
-    OLLAMA_BASE_URL: str = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
-    OLLAMA_MODEL: str = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
-    CLOUDFLARE_API_TOKEN: str = os.getenv("CLOUDFLARE_API_TOKEN", "")
-    CLOUDFLARE_ACCOUNT_ID: str = os.getenv("CLOUDFLARE_ACCOUNT_ID", "")
+    PROVIDER_ORDER: list = os.getenv("PROVIDER_ORDER", "openrouter,gemini,groq").split(",")
+    OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
+    OPENROUTER_MODELS: list = _split(os.getenv("OPENROUTER_MODELS", _DEFAULT_OPENROUTER_MODELS))
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
+    GEMINI_MODELS: list = _split(os.getenv("GEMINI_MODELS", "gemini-1.5-flash"))
     GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
+    GROQ_MODELS: list = _split(os.getenv("GROQ_MODELS", "mixtral-8x7b-32768"))
     ADMIN_TOKEN: str = os.getenv("ADMIN_TOKEN", "")
     MAX_AGENT_STEPS: int = int(os.getenv("MAX_AGENT_STEPS", "6"))
     MAX_HISTORY: int = int(os.getenv("MAX_HISTORY", "8"))
 ```
 
-## Provider Configuration Details
+## Default OpenRouter Free Models
 
-### Ollama
-- Base URL configurable via `OLLAMA_BASE_URL`
-- Model via `OLLAMA_MODEL`
-- No API key required
-- Typically used as primary for local/self-hosted models
+The default `OPENROUTER_MODELS` selects 10 free models chosen for code, debugging, reasoning, vision, and tool-calling:
 
-### OpenRouter
-- Hardcoded base URL: `https://openrouter.ai/api/v1`
-- Model: `anthropic/claude-3.5-sonnet` (hardcoded in router)
-- Uses `CLOUDFLARE_API_TOKEN` as API key
-- Enabled only if token is set
+| Model | Strength |
+|-------|----------|
+| `thinkingmachines/inkling-small:free` | Best free coding/multimodal agent (SWE-bench 80.2%) |
+| `thinkingmachines/inkling:free` | Strong agentic + vision (1M context) |
+| `nvidia/nemotron-3-ultra-550b-a55b:free` | Frontier reasoning + tool calling (55B active) |
+| `google/gemma-4-31b-it:free` | Best vision + reasoning + code combo |
+| `nvidia/nemotron-3.5-super-vl:free` | Multimodal vision with document/GUI understanding |
+| `recursive/flint-v1.0:free` | Purpose-built coding agent (bug fixes, tests) |
+| `google/gemma-4-26b-a4b-it:free` | Near-31B quality at ~1/8 compute |
+| `nvidia/nemotron-3-super-120b-a12b:free` | Best structured output + long-context retention |
+| `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free` | Only free model with audio+video+image |
+| `cohere/north-mini-code:free` | Lightweight coding fallback |
 
-### Gemini
-- Base URL: `https://generativelanguage.googleapis.com/v1beta`
-- Model: `gemini-1.5-flash` (hardcoded)
-- Uses `GEMINI_API_KEY`
-- Enabled only if key is set
+## Routing Behavior
 
-### Groq
-- Base URL: `https://api.groq.com/openai/v1`
-- Model: `mixtral-8x7b-32768` (hardcoded)
-- Uses `GROQ_API_KEY`
-- Enabled only if key is set
+- The router tries providers in `PROVIDER_ORDER` order.
+- Within a provider, models are tried in round-robin order. A failing model is skipped and the next model is attempted before the provider is abandoned.
+- The active provider/model is reported in `/health` and `/chat` responses.
+
+## Updating Models Without Code Changes
+
+To swap models on a deployed instance, update the `OPENROUTER_MODELS` (or `GEMINI_MODELS` / `GROQ_MODELS`) environment variable on the host — no code change or redeploy needed:
+
+```bash
+# Render dashboard or .env
+OPENROUTER_MODELS=thinkingmachines/inkling-small:free,google/gemma-4-31b-it:free
+```
 
 ## Setup
 

@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+from pathlib import Path
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException, Header, status
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from .config import Settings
 from .agent import FinanceAgent
 from .models import ChatRequest, ChatResponse, HealthResponse, QuoteResponse
@@ -10,6 +12,8 @@ from .db import init_db
 
 settings = Settings()
 agent = FinanceAgent(settings)
+
+_static_dir = Path(__file__).resolve().parent / "static"
 
 
 @asynccontextmanager
@@ -19,6 +23,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Phungu Agent", version="1.0.0", lifespan=lifespan)
+app.mount("/static", StaticFiles(directory=str(_static_dir)), name="static")
 
 ADMIN_TOKEN = settings.ADMIN_TOKEN if hasattr(settings, "ADMIN_TOKEN") else ""
 
@@ -85,6 +90,13 @@ async def get_quote(symbol: str):
         )
 
 
+@app.get("/admin")
+async def admin_dashboard():
+    from fastapi.responses import RedirectResponse
+
+    return RedirectResponse(url="/static/admin.html")
+
+
 @app.get("/api/providers")
 async def list_providers(authorization: str | None = Header(default=None)):
     _require_admin(authorization)
@@ -93,13 +105,21 @@ async def list_providers(authorization: str | None = Header(default=None)):
         result.append(
             {
                 "name": prov.name,
-                "enabled": prov.settings.enabled,
+                "enabled": prov.enabled,
                 "available": prov.available(),
-                "model": getattr(prov.settings, "model", "unknown"),
-                "base_url": prov.settings.base_url,
+                "model": prov.models[0] if prov.models else "unknown",
+                "base_url": prov.base_url,
             }
         )
     return {"providers": result}
+
+
+@app.get("/admin/sessions")
+async def list_sessions(authorization: str | None = Header(default=None)):
+    _require_admin(authorization)
+    from .memory import MEMORY
+
+    return {"sessions": MEMORY.active_sessions()}
 
 
 @app.post("/admin/session/{session_id}/clear")
